@@ -1,0 +1,29 @@
+<modification>
+    <code>extract_module_from_opencart_3.x</code>
+    <name><![CDATA[Extract Module From Opencart 3.x]]></name>
+    <version>1.0.0</version>
+    <author><![CDATA[David Galet]]></author>
+    <link>http://www.davidev.it</link>
+    <!-- Add voice menu -->
+    <file path="admin/controller/common/column_left.php">
+        <operation>
+            <search index="0"><![CDATA[if ($this->user->hasPermission('access', 'marketplace/installer')) {]]></search>
+            <add position="before"><![CDATA[
+            if ($this->user->hasPermission('access', 'marketplace/installer')) {
+				$marketplace[] = array(
+					'name'	   => $this->load->controller('extension/extractor_modules/dashboard/name_menu'),
+					'href'     => $this->url->link('extension/extractor_modules/dashboard', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => array()
+				);
+			}
+            ]]></add>
+        </operation>
+    </file>
+    <!-- Add permission -->
+    <file path="admin/controller/startup/permission.php">
+        <operation>
+            <search index="0"><![CDATA['extension/report',]]></search>
+            <add position="after"><![CDATA['extension/extractor_modules',]]></add>
+        </operation>
+    </file>
+</modification>

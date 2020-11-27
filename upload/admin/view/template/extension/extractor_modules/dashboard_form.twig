@@ -1,0 +1,133 @@
+{{ header }}{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div id="note-update-catalog"></div>
+        {% if error_warning %}
+            <div class="alert alert-danger alert-dismissible"><i
+                        class="fa fa-exclamation-circle"></i> {{ error_warning }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endif %}
+        {% if success %}
+            <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endif %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-exchange"></i>{{ title_1 }}</h3> <p>{{ dir_save_locaiton }}{{ location_folder }}</p>
+            </div>
+            <div class="panel-body">
+                <form class="form-inline">
+                    <label class="col-sm-12 control-label">{{ status_upload }}</label>
+                    <div class="col-sm-12">
+                        <div id="progress-start" class="progress">
+                            <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                 aria-valuemax="100"></div>
+                        </div>
+                        <div id="progress-result"></div>
+                    </div>
+                    <div class="col-sm-12">
+                        <button type="button" id="button-start" class="btn btn-primary">{{ button_action }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-exclamation-triangle"></i> {{ text_list }}</h3>
+            </div>
+            <div class="panel-body">
+                <textarea wrap="off" rows="25" readonly class="form-control" id="log"></textarea>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $('#button-start').on('click', function () {
+            if (typeof timer != 'undefined') {
+                clearInterval(timer);
+            }
+            timer = setInterval(function () {
+                clearInterval(timer);
+                $('#progress-start .progress-bar').attr('aria-valuenow', 0);
+                $('#progress-start .progress-bar').css('width', '0%');
+                $.ajax({
+                    url: 'index.php?route=extension/extractor_modules/dashboard/api_create_repository&user_token={{ user_token }}',
+                    type: 'post',
+                    dataType: 'json',
+                    beforeSend: function () {
+                        $('#button-start').button('loading');
+                    },
+                    complete: function () {
+                        $('#button-start').button('loading');
+                    },
+                    success: function (json) {
+                        $('#button-start').button('reset');
+                        $('.alert-dismissible').remove();
+                        if (json['error']) {
+                            $('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                        }
+                        if (json['success']) {
+                            $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                        }
+                        if (json['total']) {
+                            $('#progress-result').after('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i>{{ text_position }}' + json['live_n'] + '{{ text_total }}' + json['total_element'] + ' </div>');
+                            $('#progress-start .progress-bar').attr('aria-valuenow', json['total']);
+                            $('#progress-start .progress-bar').css('width', json['total'] + '%');
+                            $('#log').append(json['text_result'] + "\n");
+                        }
+                        if (json['next']) {
+                            next(json['next']);
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                        console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                    }
+                });
+            }, 100);
+        });
+
+        function next(url) {
+            $.ajax({
+                url: url,
+                dataType: 'json',
+                success: function (json) {
+                    $('.alert-dismissible').remove();
+                    if (json['error']) {
+                        $('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                    }
+                    if (json['success']) {
+                        $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                        $('#button-start').button('reset');
+                        $('#progress-result').remove();
+                    }
+                    if (json['total']) {
+                        $('#progress-result').after('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i>{{ text_position }}' + json['live_n'] + '{{ text_total }}' + json['total_element'] + ' </div>');
+                        $('#progress-start .progress-bar').attr('aria-valuenow', json['total']);
+                        $('#progress-start .progress-bar').css('width', json['total'] + '%');
+                        $('#log').append(json['text_result'] + "\n");
+                    }
+                    if (json['next']) {
+                        next(json['next']);
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                    console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                }
+            });
+        }
+    </script>
+</div>
+{{ footer }}
