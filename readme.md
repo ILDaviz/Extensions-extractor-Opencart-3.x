@@ -1,4 +1,4 @@
-# Extension Extractor Opencart V2.x or 3.X
+# Extension Extractor Opencart 3.X
 ---
 [![Minimum Opencart Version](https://img.shields.io/badge/Opencart-%3E%3D%203.X-green)](https://www.opencart.com/index.php?route=common/home)
 [![Minimum Opencart Version](https://img.shields.io/badge/Donate-Buy%20me%20a%20coffee%2C%20Thanks!!-orange)](https://www.buymeacoffee.com/davidev)
